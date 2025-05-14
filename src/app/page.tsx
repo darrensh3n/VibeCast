@@ -15,6 +15,20 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
+  function RainDrop() {
+    const [style, setStyle] = useState({})
+  
+    useEffect(() => {
+      setStyle({
+        left: `${Math.random() * 100}%`,
+        animationDuration: `${Math.random() * 2 + 1}s`,
+        animationDelay: `${Math.random() * 2}s`
+      })
+    }, [])
+  
+    return <div className="rain-drop" style={style}></div>
+  }  
+
   return (
     <main className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 text-white">
       {/* Animated background elements */}
@@ -22,12 +36,8 @@ export default function HomePage() {
         {/* Rain effect */}
         <div className="rain-container">
           {[...Array(20)].map((_, i) => (
-            <div key={i} className="rain-drop" style={{
-              left: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 2 + 1}s`,
-              animationDelay: `${Math.random() * 2}s`
-            }}></div>
-          ))}
+              <RainDrop key={i} />
+        ))}
         </div>
       </div>
       
