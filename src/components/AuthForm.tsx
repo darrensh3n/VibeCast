@@ -1,32 +1,71 @@
 'use client'
 
-import { useState } from 'react'
+import { JSX, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
 }
 
-export default function AuthForm({ mode }: AuthFormProps) {
+export default function AuthForm({ mode }: AuthFormProps): JSX.Element {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email || !password || (mode === 'signup' && !confirmPassword)) {
-      return alert('Please fill in all fields.')
+    if (!email) {
+        return alert('Email is required.')
     }
-
+    if (!password) {
+        return alert('Password is required.')
+    }
+    if (mode === 'signup' && !confirmPassword) {
+        return alert('Please confirm your password.')
+    }
     if (mode === 'signup' && password !== confirmPassword) {
       return alert('Passwords do not match.')
     }
+    if (mode === 'signup' && password.length < 8) {
+      return alert('Password must be at least 8 characters long.')
+    }
 
-    // Placeholder logic
+    if (mode === 'login') {
+      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+        if (loginError) {
+            alert(loginError.message)
+            return
+        }
+        router.push('/dashboard')
+    } else {
+      const { error: error, data } = await supabase.auth.signUp({ email, password })
+      if (error) {
+        alert(error.message)
+        return
+      }
+
+      const user = data?.user
+      if (user) {
+        const { error: profileError } = await supabase.from('profiles').insert([
+            {
+                id: user.id,
+                email,
+                preferences: {},
+            },
+            ])
+            if (profileError) {
+                alert('Failed to create user profile. Please try again.')
+                return
+            }
+      }
+    }
+
     router.push('/dashboard')
   }
+  
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 text-white px-4">
