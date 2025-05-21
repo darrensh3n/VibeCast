@@ -13,10 +13,13 @@ export default function AuthForm({ mode }: AuthFormProps): JSX.Element {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
 
+    try {
     if (!email) {
         return alert('Email is required.')
     }
@@ -64,6 +67,9 @@ export default function AuthForm({ mode }: AuthFormProps): JSX.Element {
     }
 
     router.push('/dashboard')
+  } finally {
+    setIsLoading(false)
+  }
   }
   
 
@@ -111,13 +117,17 @@ export default function AuthForm({ mode }: AuthFormProps): JSX.Element {
           )}
           <button
             type="submit"
-            className={`${
-              mode === 'login'
+            disabled={isLoading}
+            className={`
+              px-6 py-3 rounded-lg text-white font-medium transition
+              transform hover:scale-98
+              ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}
+              ${mode === 'login'
                 ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
-                : 'bg-gradient-to-r from-purple-500 to-pink-500'
-            } px-6 py-3 rounded-lg hover:opacity-90 transition font-medium`}
+                : 'bg-gradient-to-r from-purple-500 to-pink-500'}
+            `}
           >
-            {mode === 'login' ? 'Log In' : 'Sign Up'}
+            {isLoading ? 'Loading...' : mode === 'login' ? 'Log In' : 'Sign Up'}
           </button>
         </form>
 
