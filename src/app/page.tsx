@@ -65,13 +65,15 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <button
                 onClick={() => router.push('/auth/login')}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 rounded-lg hover:opacity-90 transition font-medium"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 rounded-lg font-medium 
+  transition-transform transform hover:scale-96 active:scale-95"
               >
                 Login
               </button>
               <button
                 onClick={() => router.push('/auth/signup')}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg hover:opacity-90 transition font-medium"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-medium 
+  transition-transform transform hover:scale-96 active:scale-95"
               >
                 Sign Up
               </button>
