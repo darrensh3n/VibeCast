@@ -1,13 +1,15 @@
-// src/app/dashboard/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { use, useState } from 'react'
 import DashboardTabs from '@/components/DashboardTabs'
+import { useEffect } from 'react'
 
 export default function Dashboard() {
   const [selectedMood, setSelectedMood] = useState('')
   const [selectedWeather, setSelectedWeather] = useState('')
   const [selectedGenres, setSelectedGenres] = useState<string[]>([])
+  const [weather, setWeather] = useState<string | null>(null)
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
 
   const handleMoodClick = (mood: string) => setSelectedMood(mood)
   const handleWeatherClick = (weather: string) => setSelectedWeather(weather)
@@ -16,6 +18,55 @@ export default function Dashboard() {
       prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
     )
   }
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by your browser')
+      return
+    }
+  
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        })
+      },
+      (error) => {
+        console.error('Geolocation permission denied or failed:', error)
+      }
+    )
+  }, [])
+
+  useEffect(() => {
+    if (!location) return
+  
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&units=imperial&appid=${process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY}`
+        )
+  
+        if (!res.ok) {
+          throw new Error('Failed to fetch weather data')
+        }
+  
+        const data = await res.json()
+        console.log('Weather API response:', data)
+  
+        if (data.weather && Array.isArray(data.weather) && data.weather.length > 0) {
+          setWeather(data.weather[0].description)
+        } else {
+          throw new Error('Weather data is missing or malformed')
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error)
+        setWeather('Unable to fetch weather data')
+      }
+    }
+  
+    fetchWeather()
+  }, [location])
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 text-white px-6 py-10">
@@ -27,17 +78,11 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold mb-2">Current Weather</h2>
           <p className="text-sm text-gray-300 mb-4">Weather affects your playlist recommendations</p>
           <div className="flex gap-3">
-            {['Sunny', 'Rainy', 'Cloudy'].map((weather) => (
-              <button
-                key={weather}
-                onClick={() => handleWeatherClick(weather)}
-                className={`px-4 py-2 rounded-full text-sm border hover:bg-white/20 transition ${
-                  selectedWeather === weather ? 'bg-white/20 border-white' : 'border-gray-400'
-                }`}
-              >
-                {weather}
-              </button>
-            ))}
+            {weather && (
+              <p className="mt-4 text-center text-white/80 text-sm">
+                Current Weather: <span className="font-medium">{weather}</span>
+              </p>
+            )}
           </div>
         </section>
 
